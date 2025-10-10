@@ -82,6 +82,8 @@ Dán đoạn bootargs dưới đây vào phần user set kernel bootargs:
 earlycon clk_ignore_unused cpuidle.off=1 root=/dev/mmcblk0p2 rw rootwait uio_pdrv_genirq.of_id=generic-uio
  ```
 📌 Cấu hình này giúp khởi động đúng thiết bị, bật driver UIO, cấp vùng bộ nhớ CMA, và giữ clock cho các IP tự thiết kế trong PL.
+Sau đó chọn `Save` => `OK` => `Exit` => `Exit`
+
 2) Thiết lập SD card
 ```text
 Image Packaing Configuration --->
@@ -169,12 +171,7 @@ petalinux-package --boot --force --u-boot
 ```
 ⚠️ **Lưu ý**: Vẫn thực hiện trong folder ZCU104 hoặc các folder tương ứng mọi người đang dùng để lưu.
 
-#### Sau đó cắm SD card vào PC, tiến hàn phân vùng và định dạng thẻ nhớ SD.
-
-📥 [Tải file Debian rootfs tại đây](https://drive.google.com/file/d/1ZcJYuVHpn8ER11nLCjwCUjfc5ykqP0tM/view?usp=sharing)
-
-> File rootfs này chứa hệ điều hành Debian đã được cấu hình sẵn cho kiến trúc ARM64, hỗ trợ giao diện XFCE và dễ dàng cài đặt thêm ứng dụng bằng `apt`.
-> Giải nén file zip để được file tar
+#### Sau đó cắm SD card vào PC, tiến hàn phân vùng và định dạng thẻ nhớ SD, mọi người nên sử dụng thẻ nhớ 8GB trở nên.
 
 #### Kiểm tra phân vùng thẻ sd card đã cắm
 ```bash
@@ -241,4 +238,68 @@ chmod 777 image/
 ```bash
 sudo mkfs.vfat -F 32 -n boot /dev/sda1
 sudo mkfs.ext4 -L root /dev/sda2
+```
 
+#### Tiến hành mount thẻ SD card
+1) Tạo folder
+   ```bash
+   sudo mkdir /mnt/boot
+   sudo mkdir /mnt/root
+   ```
+2) Thực hiện mount thẻ SD card
+   ```bash
+   sudo mount /dev/sda1 /mnt/boot
+   sudo mount /dev/sda2 /mnt/root
+   ```
+⚠️ **Lưu ý**: Tuy nhiêu, hệ điều hành sẽ tự động mount đến một vị trí khác vì vậy mọi người cần kiểm tra lại
+	Kiểm tra lại ổ vị trí mount:
+		```bash
+		lsblk
+		```
+	Trên màn log sẽ hiện ví dụ như:
+	```text
+	NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+	loop0    7:0    0     4K  1 loop /snap/bare/5
+	loop1    7:1    0 329,6M  1 loop /snap/code/209
+	loop2    7:2    0  63,8M  1 loop /snap/core20/2669
+	loop3    7:3    0  73,9M  1 loop /snap/core22/2111
+	loop4    7:4    0  73,9M  1 loop /snap/core22/2133
+	loop5    7:5    0 247,1M  1 loop /snap/firefox/6836
+	loop6    7:6    0 247,6M  1 loop /snap/firefox/6966
+	loop7    7:7    0 516,2M  1 loop /snap/gnome-42-2204/226
+	loop8    7:8    0   516M  1 loop /snap/gnome-42-2204/202
+	loop9    7:9    0  91,7M  1 loop /snap/gtk-common-themes/1535
+	loop10   7:10   0  12,9M  1 loop /snap/snap-store/1113
+	loop11   7:11   0  12,2M  1 loop /snap/snap-store/1216
+	loop12   7:12   0  49,3M  1 loop /snap/snapd/24792
+	loop13   7:13   0  50,8M  1 loop /snap/snapd/25202
+	loop14   7:14   0   568K  1 loop /snap/snapd-desktop-integration/253
+	loop15   7:15   0   576K  1 loop /snap/snapd-desktop-integration/315
+	loop16   7:16   0 330,2M  1 loop /snap/code/210
+	sda      8:0    0 465,8G  0 disk 
+	├─sda1   8:1    0   512M  0 part /boot/efi
+	└─sda2   8:2    0 465,3G  0 part /
+	sdb      8:16   0 931,5G  0 disk 
+	├─sdb1   8:17   0 931,5G  0 part /media/edabk/boot
+	└─sda2   8:2    0 465,3G  0 part /media/edabk/root
+	```
+	Từ đây mọi người sử dụng 2 đường dẫn mới là `/media/edabk/boot` và `/media/edabk/root` thực hiện cho các bước tiếp theo.
+
+3) Dịch chuyển file config vào boot
+   ```bash
+   	cd 
+	sudo cp BOOT.BIN boot.scr image.ub /media/edabk/boot/
+   ```
+4) Giải nén deian linux
+   📥 [Tải file Debian rootfs tại đây](https://drive.google.com/file/d/1ZcJYuVHpn8ER11nLCjwCUjfc5ykqP0tM/view?usp=sharing)
+
+	> File rootfs này chứa hệ điều hành Debian đã được cấu hình sẵn cho kiến trúc ARM64, hỗ trợ giao diện XFCE và dễ dàng cài đặt thêm ứng dụng bằng `apt`.
+	> Giải nén file zip để được file tar
+
+	Giải nén file tar đến folder root
+	```bash
+ 	sudo tar xfvp arm64-rootfs-debian-bullseye.tar -C /media/edabk/root/
+ 	```
+ 	⚠️ **Lưu ý**: file tar mọi người nếu cần phải trỏ đường dẫn đến đúng file này
+5) Tạo ramdisk
+   ```
