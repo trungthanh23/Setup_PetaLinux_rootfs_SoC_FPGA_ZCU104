@@ -1,0 +1,1 @@
+# Thi-t-l-p-m-i-tr-ng-PetaLinux-v-rootfs-tr-n-SoC-FPGA-ZCU104
