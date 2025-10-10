@@ -3,7 +3,7 @@
 - Hướng dẫn này được hỗ trợ từ anh Phan Thành Luân - AISeQ Lab.
 - Đường dẫn gốc: https://github.com/datnduit/Level_1_KV260_FPGA/tree/main
 ---
-### Thiết lập môi trường PetaLinux và tạo driver
+### I. Thiết lập môi trường PetaLinux và tạo driver
 
 Sau khi hoàn tất thiết kế phần cứng và tạo Block Design trong Vivado, bước tiếp theo là **xuất file phần cứng (`.xsa`)** để sử dụng trong PetaLinux nhằm tạo hệ điều hành và driver phù hợp cho hệ thống.
 
@@ -54,7 +54,7 @@ chmod +x petalinux-v2022.2-*.run
 source <đường_dẫn_cài_petalinux>/2022.2/settings.sh
 ```
 
-##### Tải bộ cài BSP cho KV260 FPGA từ trang chính thức Xilinx:
+##### Tải bộ cài BSP cho ZCU104 FPGA từ trang chính thức Xilinx:
     🔗 https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools/archive.html
 
 ##### Tạo project PetaLinux từ BSP
@@ -160,34 +160,34 @@ petalinux-build
 ```
 ⚠️ **Lưu ý**:  Build sẽ tốn tầm 30 phút đến 1 tiếng.
 
-### Tạo image khởi động và rootfs cho Linux trên SoC FPGA
+### II. Tạo image khởi động và rootfs cho Linux trên SoC FPGA
 
-Sau khi build project thành công, gõ lệnh này để đóng gói file khởi động BOOT.BIN cùng với U-Boot phù hợp cho hệ thống.
+#### Sau khi build project thành công, gõ lệnh này để đóng gói file khởi động BOOT.BIN cùng với U-Boot phù hợp cho hệ thống.
 
 ```bash
 petalinux-package --boot --force --u-boot
 ```
 ⚠️ **Lưu ý**: Vẫn thực hiện trong folder ZCU104 hoặc các folder tương ứng mọi người đang dùng để lưu.
 
-Sau đó cắm SD card vào PC, tiến hàn phân vùng và định dạng thẻ nhớ SD.
+#### Sau đó cắm SD card vào PC, tiến hàn phân vùng và định dạng thẻ nhớ SD.
 
 📥 [Tải file Debian rootfs tại đây](https://drive.google.com/file/d/1ZcJYuVHpn8ER11nLCjwCUjfc5ykqP0tM/view?usp=sharing)
 
 > File rootfs này chứa hệ điều hành Debian đã được cấu hình sẵn cho kiến trúc ARM64, hỗ trợ giao diện XFCE và dễ dàng cài đặt thêm ứng dụng bằng `apt`.
 > Giải nén file zip để được file tar
 
-Kiểm tra phân vùng thẻ sd card đã cắm
+#### Kiểm tra phân vùng thẻ sd card đã cắm
 ```bash
 sudo fdisk -l
 ```
 > Thông thường có dạng như kiểu `/dev/sda` hoặc `/dev/sdd`. Ví dụ ở đây của mình là `/dev/sda`.
 
-Cấp quyền cho folder `image/`
+#### Cấp quyền cho folder `image/`
 ```bash
 chmod 777 image/
 ```
 
-Tiến hành phân vùng cho sd card: 
+##### Tiến hành phân vùng cho sd card: 
 1) Nhập lệnh:
    ``` bash
    sudo fdisk /dev/sda
@@ -237,7 +237,8 @@ Tiến hành phân vùng cho sd card:
   Command (m for help) : [Điền w]
   ```
 
-Format để định dạng sd card
+#### Format để định dạng sd card
 ```bash
 sudo mkfs.vfat -F 32 -n boot /dev/sda1
 sudo mkfs.ext4 -L root /dev/sda2
+
