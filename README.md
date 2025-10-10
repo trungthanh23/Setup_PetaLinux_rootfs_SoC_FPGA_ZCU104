@@ -1,1 +1,1 @@
-# Thi-t-l-p-m-i-tr-ng-PetaLinux-v-rootfs-tr-n-SoC-FPGA-ZCU104
+# Thiết lập môi trường PetaLinux, tạo Image khởi động và rootfs cho Linux trên SoC FPGA trên kit ZCU104
