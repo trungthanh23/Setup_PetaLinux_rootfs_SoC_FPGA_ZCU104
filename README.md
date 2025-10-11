@@ -2,7 +2,7 @@
 
 Hướng dẫn này trình bày quy trình đầy đủ để thiết lập môi trường PetaLinux, tạo Image khởi động và hệ điều hành Linux (với rootfs Debian) cho bo mạch ZCU104.
 
-> **Lưu ý quan trọng**: Hướng dẫn này được thực hiện với sự hỗ trợ từ anh **Phan Thành Luân** - AISeQ Lab.
+> **Lưu ý quan trọng**: Hướng dẫn này được thực hiện với sự hỗ trợ từ anh **Phan Hoài Luân** - AISeQ Lab.
 >
 > **Nguồn tham khảo**: [https://github.com/datnduit/Level_1_KV260_FPGA/tree/main](https://github.com/datnduit/Level_1_KV260_FPGA/tree/main)
 
@@ -114,7 +114,7 @@ Sau khi hoàn tất Block Design và **Generate Bitstream** thành công trong V
         };
     
         amba_pl@0 {
-            /* Thay đổi địa chỉ @a0000000 và tên MY_IP cho phù hợp với thiết kế của bạn */
+            /* Thay đổi địa chỉ @a0000000 và tên MY_IP cho phù hợp với thiết kế của bạn, đúng theo memory map của mpsoc*/
             MY_IP@a0000000 {
                 compatible = "generic-uio";
             };
@@ -286,7 +286,7 @@ Mọi thắc mắc, vui lòng liên hệ:
 * **Nhóm EDABK**:
     * Đặng Công Bách
     * Nguyễn Thành Trung
-* **Tác giả hướng dẫn**: Anh **Phạm Thành Luân**
+* **Tác giả hướng dẫn**: Anh **Phạm Hoài Luân**
     * **Facebook**: [https://www.facebook.com/pham.luan.921/](https://www.facebook.com/pham.luan.921/)
     * **Email**: [luanph@uit.edu.vn](mailto:luanph@uit.edu.vn)
 
