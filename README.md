@@ -1,305 +1,293 @@
-# Thiết lập môi trường PetaLinux, tạo Image khởi động và rootfs cho Linux trên SoC FPGA trên kit ZCU104
-⚠️ **Lưu ý**: 
-- Hướng dẫn này được hỗ trợ từ anh Phan Thành Luân - AISeQ Lab.
-- Đường dẫn gốc: https://github.com/datnduit/Level_1_KV260_FPGA/tree/main
+# Hướng dẫn Thiết lập PetaLinux và Tạo Image cho ZCU104
+
+Hướng dẫn này trình bày quy trình đầy đủ để thiết lập môi trường PetaLinux, tạo Image khởi động và hệ điều hành Linux (với rootfs Debian) cho bo mạch ZCU104.
+
+> **Lưu ý quan trọng**: Hướng dẫn này được thực hiện với sự hỗ trợ từ anh **Phan Thành Luân** - AISeQ Lab.
+>
+> **Nguồn tham khảo**: [https://github.com/datnduit/Level_1_KV260_FPGA/tree/main](https://github.com/datnduit/Level_1_KV260_FPGA/tree/main)
+
 ---
-### I. Thiết lập môi trường PetaLinux và tạo driver
 
-Sau khi hoàn tất thiết kế phần cứng và tạo Block Design trong Vivado, bước tiếp theo là **xuất file phần cứng (`.xsa`)** để sử dụng trong PetaLinux nhằm tạo hệ điều hành và driver phù hợp cho hệ thống.
+## I. Thiết lập Môi trường PetaLinux
 
-#### 1. Xuất file phần cứng (`.xsa`) từ Vivado
+Phần này mô tả các bước từ việc xuất thiết kế phần cứng trong Vivado đến việc xây dựng project PetaLinux.
 
-- Trong Vivado, sau khi **Generate Bitstream** thành công:
-  - Vào menu: **File → Export → Export Hardware**
-  - Chọn:Include bitstream
-  - File `.xsa` sẽ được tạo ra (ví dụ: `SoC_wrapper.xsa`)
+### 1. Xuất file Phần cứng (`.xsa`) từ Vivado
 
-#### 2. Cài đặt PetaLinux
+Sau khi hoàn tất Block Design và **Generate Bitstream** thành công trong Vivado:
 
-- Tải bộ cài **PetaLinux 2022.2** từ trang chính thức Xilinx:
-    🔗 https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools/archive.html
+1.  Mở menu: **File → Export → Export Hardware**.
+2.  Đánh dấu chọn vào ô **Include bitstream**.
+3.  Nhấn **OK** để xuất file. File `.xsa` (ví dụ: `ZCU104_wrapper.xsa`) sẽ được tạo ra.
 
+### 2. Cài đặt PetaLinux 2022.2
 
-##### Cài đặt các gói phụ thuộc (Ubuntu/Debian)
+1.  **Tải bộ cài**:
+    * Truy cập trang Xilinx và tải về **PetaLinux 2022.2 Installer**:
+    * 🔗 [Xilinx Downloads - Archive](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools/archive.html)
 
-```bash
-sudo apt-get install tofrodos gawk xvfb git libncurses5-dev tftpd zlib1g-dev zlib1g-dev:i386 \
-libssl-dev flex bison chrpath socat autoconf libtool texinfo gcc-multilib \
-libsdl1.2-dev libglib2.0-dev screen pax libtinfo5 xterm build-essential net-tools
-```
-	
-##### Cấp quyền thực thi cho file `.run`
+2.  **Cài đặt các gói phụ thuộc (Ubuntu/Debian)**:
+    ```bash
+    sudo apt-get install tofrodos gawk xvfb git libncurses5-dev tftpd zlib1g-dev zlib1g-dev:i386 \
+    libssl-dev flex bison chrpath socat autoconf libtool texinfo gcc-multilib \
+    libsdl1.2-dev libglib2.0-dev screen pax libtinfo5 xterm build-essential net-tools
+    ```
 
-```bash
-chmod +x petalinux-v2022.2-*.run
-```
+3.  **Chạy trình cài đặt**:
+    ```bash
+    # Cấp quyền thực thi cho file .run
+    chmod +x petalinux-v2022.2-*.run
+    
+    # Chạy file cài đặt
+    ./petalinux-v2022.2-*.run
+    ```
+    * Trong quá trình cài đặt, bạn sẽ cần xem qua các điều khoản bản quyền. Dùng `PgUp`/`PgDn` để cuộn, nhấn `q` để thoát và `y` để đồng ý.
 
-#####  Chạy trình cài đặt
+### 3. Xây dựng Project PetaLinux
 
-```bash
-./petalinux-v2022.2-*.run
-```
+1.  **Thiết lập môi trường PetaLinux**:
+    Mỗi khi mở một terminal mới để làm việc, bạn cần source file `settings.sh`:
+    ```bash
+    source <đường_dẫn_cài_đặt_petalinux>/2022.2/settings.sh
+    ```
 
-- Trong quá trình cài đặt, trình cài đặt sẽ hiển thị các thỏa thuận bản quyền:
-	- Dùng PgUp / PgDn để đọc
-	- Nhấn q để thoát khỏi phần hiển thị
-	- Nhấn y để đồng ý và tiếp tục
+2.  **Tải BSP (Board Support Package) cho ZCU104**:
+    * Tải file BSP cho ZCU104 từ cùng trang download của Xilinx.
 
-#### 3. Xây dựng môi trường phần cứng
+3.  **Tạo Project từ BSP**:
+    ```bash
+    # Tạo project tên là ZCU104_Linux từ file BSP đã tải
+    petalinux-create -t project -s <đường_dẫn_tới_file_bsp>/xilinx-zcu104-v2022.2-final.bsp -n ZCU104_Linux
+    
+    # Di chuyển vào thư mục project
+    cd ZCU104_Linux
+    ```
 
-##### Thiết lập môi trường làm việc Petalinux
+4.  **Import file thiết kế phần cứng (`.xsa`)**:
+    ```bash
+    # Trỏ PetaLinux đến file .xsa đã xuất từ Vivado
+    petalinux-config --get-hw-description=<đường_dẫn_tới_file_xsa>
+    ```
+    Một giao diện cấu hình sẽ hiện lên. Bạn có thể thoát ngay mà không cần thay đổi gì ở bước này.
 
-##### **Source** đến thư mục cài đặt Petalinux để sử dụng được các lệnh `petalinux-*`:
-```bash
-source <đường_dẫn_cài_petalinux>/2022.2/settings.sh
-```
+5.  **Cấu hình Kernel và Device Tree**:
+    * **Thiết lập Kernel Boot Arguments**:
+        Mở lại giao diện cấu hình: `petalinux-config`
+        Điều hướng đến: `DTG Settings ---> Kernel Bootargs`
+        * Bỏ chọn `[ ] generate boot args automatically`.
+        * Dán chuỗi sau vào `user set kernel bootargs`:
+            ```text
+            earlycon clk_ignore_unused cpuidle.off=1 root=/dev/mmcblk0p2 rw rootwait uio_pdrv_genirq.of_id=generic-uio
+            ```
+    * **Thiết lập Root Filesystem trên SD Card**:
+        Trong cùng giao diện, điều hướng đến: `Image Packaging Configuration ---> Root filesystem type`
+        * Chọn `(X) EXT4 (SD/eMMC/SATA/USB)`.
+    * Lưu cấu hình và thoát.
 
-##### Tải bộ cài BSP cho ZCU104 FPGA từ trang chính thức Xilinx:
-    🔗 https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools/archive.html
-
-##### Tạo project PetaLinux từ BSP
-```bash	
-petalinux-create -t project -s <đường_dẫn_tới_file_BSP>.bsp --name ZCU104_Linux
-cd ZCU104_Linux
- ```
- 
-##### Import phần cứng (.xsa) vào project Sau khi bạn export file .xsa từ Vivado (có chứa bitstream), hãy dùng lệnh sau để tích hợp phần cứng vào project:
-```bash
-petalinux-config --get-hw-description=<path_to_the_hw_description_file> 
- ```
-##### Cấu hình kernel bootargs thủ công Sau khi chạy petalinux-config, hệ thống sẽ mở giao diện curses để bạn cấu hình sâu hơn. Điều chỉnh cấu hình kernel bootargs Trong cửa sổ cấu hình, thực hiện các bước sau:
- 1) Thiết lập bootargs
- ```text
-Subsystem AUTO Hardware Settings  --->
-    DTG Settings  --->
-        Kernel Bootargs  --->
-            [ ] generate boot args automatically
-            (user-defined) user set kernel bootargs
- ```
- 
-Dán đoạn bootargs dưới đây vào phần user set kernel bootargs:
-```bash
-earlycon clk_ignore_unused cpuidle.off=1 root=/dev/mmcblk0p2 rw rootwait uio_pdrv_genirq.of_id=generic-uio
- ```
-📌 Cấu hình này giúp khởi động đúng thiết bị, bật driver UIO, cấp vùng bộ nhớ CMA, và giữ clock cho các IP tự thiết kế trong PL.
-Sau đó chọn `Save` => `OK` => `Exit` => `Exit`
-
-2) Thiết lập SD card
-```text
-Image Packaing Configuration --->
-    Root filesystem type (INITRD) --->
-        (X) EXT4  (SD/eMMC/SATA/USB)
-```
-##### Chỉnh sửa Device Tree (system-user.dtsi)
-
-Để hệ điều hành Linux có thể sử dụng **IP tự thiết kế trong PL** thông qua driver `uio`, bạn cần chỉnh sửa file **Device Tree Overlay**.
-Trong file ở đường dẫn `ZCU104_Linux/project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi`, chỉnh lại file thành: 
-```dts
-/include/ "system-conf.dtsi"
-/ {
-    reserved-memory {
-        #address-cells = <2>;
-        #size-cells = <2>;
-        ranges;
-        reserved: buffer@0 {
+6.  **Chỉnh sửa Device Tree cho driver UIO**:
+    Để Linux nhận diện được các IP tự thiết kế trong PL qua driver UIO, hãy chỉnh sửa file `system-user.dtsi`:
+    * Đường dẫn: `project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi`
+    * Xóa toàn bộ nội dung cũ và thay bằng nội dung sau:
+    ```dts
+    /include/ "system-conf.dtsi"
+    / {
+        reserved-memory {
+            #address-cells = <2>;
+            #size-cells = <2>;
+            ranges;
+            reserved: buffer@0 {
                 no-map;
                 reg = <0x8 0x0 0x0 0x80000000>;
+            };
         };
-    };
-
-    amba: axi {
-        /* GDMA */
-        fpd_dma_chan1: dma-controller@fd500000 {
-            compatible = "generic-uio";
+    
+        amba: axi {
+            /* GDMA Channels */
+            fpd_dma_chan1: dma-controller@fd500000 { compatible = "generic-uio"; };
+            fpd_dma_chan2: dma-controller@fd510000 { compatible = "generic-uio"; };
+            fpd_dma_chan3: dma-controller@fd520000 { compatible = "generic-uio"; };
+            fpd_dma_chan4: dma-controller@fd530000 { compatible = "generic-uio"; };
+            fpd_dma_chan5: dma-controller@fd540000 { compatible = "generic-uio"; };
+            fpd_dma_chan6: dma-controller@fd550000 { compatible = "generic-uio"; };
+            fpd_dma_chan7: dma-controller@fd560000 { compatible = "generic-uio"; };
+            fpd_dma_chan8: dma-controller@fd570000 { compatible = "generic-uio"; };
         };
-
-        fpd_dma_chan2: dma-controller@fd510000 {
-            compatible = "generic-uio";
-        };
-
-        fpd_dma_chan3: dma-controller@fd520000 {
-            compatible = "generic-uio";
-        };
-
-        fpd_dma_chan4: dma-controller@fd530000 {
-            compatible = "generic-uio";
-        };
-
-        fpd_dma_chan5: dma-controller@fd540000 {
-            compatible = "generic-uio";
-        };
-
-        fpd_dma_chan6: dma-controller@fd550000 {
-            compatible = "generic-uio";
-        };
-
-        fpd_dma_chan7: dma-controller@fd560000 {
-            compatible = "generic-uio";
-        };
-
-        fpd_dma_chan8: dma-controller@fd570000 {
-            compatible = "generic-uio";
-        };
-    };
-
-    amba_pl@0 {
-        MY_IP@a0000000 {
+    
+        amba_pl@0 {
+            /* Thay đổi địa chỉ @a0000000 và tên MY_IP cho phù hợp với thiết kế của bạn */
+            MY_IP@a0000000 {
                 compatible = "generic-uio";
+            };
+        };
+    
+        ddr_high@000800000000 {
+            compatible = "generic-uio";
+            reg = <0x8 0x0 0x0 0x80000000>;
         };
     };
+    ```
 
-    ddr_high@000800000000 {
-        compatible = "generic-uio";
-        reg = <0x8 0x0 0x0 0x80000000>;
-    };
-};
+7.  **Build Project**:
+    ```bash
+    petalinux-build
+    ```
+    ⚠️ **Lưu ý**: Quá trình build có thể mất từ 30 phút đến hơn 1 giờ.
 
-```
-##### Sau đó tiến hành build project
+---
 
-```bash
-petalinux-build
-```
-⚠️ **Lưu ý**:  Build sẽ tốn tầm 30 phút đến 1 tiếng.
+## II. Chuẩn bị Thẻ nhớ SD Card
 
-### II. Tạo image khởi động và rootfs cho Linux trên SoC FPGA
+Sau khi build thành công, chúng ta sẽ tạo các file khởi động và chuẩn bị thẻ nhớ.
 
-#### Sau khi build project thành công, gõ lệnh này để đóng gói file khởi động BOOT.BIN cùng với U-Boot phù hợp cho hệ thống.
+### 1. Đóng gói file Khởi động
+
+Lệnh này sẽ tạo ra file `BOOT.BIN` trong thư mục `images/linux/`.
 
 ```bash
 petalinux-package --boot --force --u-boot
 ```
-⚠️ **Lưu ý**: Vẫn thực hiện trong folder ZCU104 hoặc các folder tương ứng mọi người đang dùng để lưu.
 
-#### Sau đó cắm SD card vào PC, tiến hàn phân vùng và định dạng thẻ nhớ SD, mọi người nên sử dụng thẻ nhớ 8GB trở nên.
+### 2. Phân vùng và Định dạng Thẻ nhớ
 
-#### Kiểm tra phân vùng thẻ sd card đã cắm
-```bash
-sudo fdisk -l
-```
-> Thông thường có dạng như kiểu `/dev/sda` hoặc `/dev/sdd`. Ví dụ ở đây của mình là `/dev/sda`.
+Sử dụng thẻ nhớ từ **8GB trở lên**.
 
-#### Cấp quyền cho folder `image/`
-```bash
-chmod 777 image/
-```
+1.  **Xác định tên thiết bị của thẻ nhớ**:
+    Cắm thẻ nhớ vào máy tính và chạy lệnh:
+    ```bash
+    sudo fdisk -l
+    ```
+    Tìm thiết bị có dung lượng tương ứng với thẻ nhớ của bạn (ví dụ: `/dev/sdX`).
 
-##### Tiến hành phân vùng cho sd card: 
-1) Nhập lệnh:
-   ``` bash
-   sudo fdisk /dev/sda
-   ```
-2) Với từng tùy chọn ta chọn như sau: 
-  ```text
-  Command (m for help) : [Điền n]
+    > 🛑 **CẢNH BÁO CỰC KỲ QUAN TRỌNG**: Hãy chắc chắn 100% rằng bạn đã chọn đúng tên thiết bị (ví dụ: `/dev/sdb`, `/dev/sdc`). Nếu chọn nhầm `/dev/sda`, **BẠN SẼ XÓA TOÀN BỘ HỆ ĐIỀU HÀNH TRÊN MÁY TÍNH CỦA MÌNH**. Hãy kiểm tra lại nhiều lần. Trong các lệnh dưới đây, hãy thay `/dev/sdX` bằng tên thiết bị đúng.
 
-  ...
+2.  **Phân vùng thẻ nhớ**:
+    ```bash
+    sudo fdisk /dev/sdX
+    ```
+    Trong giao diện `fdisk`, lần lượt nhập các lệnh sau:
+    * `d` (xóa phân vùng cũ nếu có, lặp lại cho đến khi hết)
+    * `n` (tạo phân vùng mới) -> `p` (primary) -> `1` (partition 1) -> `Enter` (default first sector) -> `+1G` (kích thước 1GB cho phân vùng BOOT)
+    * `n` (tạo phân vùng mới) -> `p` (primary) -> `2` (partition 2) -> `Enter` (default first sector) -> `Enter` (default last sector, dùng toàn bộ phần còn lại)
+    * `w` (ghi thay đổi và thoát)
 
-  Select (default p): [Bấm Enter]
+3.  **Định dạng các phân vùng**:
+    * Phân vùng 1 (BOOT) định dạng FAT32.
+    * Phân vùng 2 (ROOT) định dạng EXT4.
+    ```bash
+    sudo mkfs.vfat -F 32 -n BOOT /dev/sdX1
+    sudo mkfs.ext4 -L ROOT /dev/sdX2
+    ```
 
-  ...
+### 3. Chép File vào Thẻ nhớ
 
-  Partition number (1-4, default 1): [Bấm Enter]
+1.  **Mount thẻ nhớ**:
+    Hầu hết các hệ điều hành Linux hiện đại sẽ tự động mount thẻ nhớ khi bạn cắm vào. Dùng lệnh `lsblk` để xem các điểm mount:
+    ```bash
+    lsblk
+    ```
+    Bạn sẽ thấy output tương tự như sau, hãy tìm đúng đường dẫn mount của bạn:
+    ```
+    sdb      8:16   1  14.9G  0 disk
+    ├─sdb1   8:17   1     1G  0 part /media/username/BOOT
+    └─sdb2   8:18   1  13.9G  0 part /media/username/ROOT
+    ```
+    Trong ví dụ này, điểm mount là `/media/username/BOOT` và `/media/username/ROOT`.
 
-  ...
+2.  **Chép các file khởi động vào phân vùng BOOT**:
+    Các file cần thiết nằm trong thư mục `images/linux/` của project PetaLinux.
+    ```bash
+    cd <đường_dẫn_project>/ZCU104_Linux/images/linux/
+    sudo cp BOOT.BIN boot.scr image.ub /media/username/BOOT/
+    ```
 
-  Last sector, +/-sectors or +/-size{K,M,G,T,P} (...): [Điền +1GB]
+3.  **Giải nén RootFS vào phân vùng ROOT**:
+    * **Tải Debian RootFS**:
+        📥 [arm64-rootfs-debian-bullseye.tar.gz](https://drive.google.com/file/d/1ZcJYuVHpn8ER11nLCjwCUjfc5ykqP0tM/view?usp=sharing)
+        > File này chứa hệ điều hành Debian 11 (Bullseye) cho ARM64, có sẵn giao diện XFCE.
 
-  ...
+    * **Giải nén vào thẻ nhớ**:
+        ```bash
+        # -C chỉ định thư mục đích để giải nén
+        sudo tar -xzf <đường_dẫn_tới_file>/arm64-rootfs-debian-bullseye.tar.gz -C /media/username/ROOT/
+        ```
 
-  Do you want to remove the signature [Y]es/[N]o: [Điền y]
+4.  **Chép Kernel Modules**:
+    Các module này rất quan trọng để driver (như UIO) hoạt động.
+    ```bash
+    # Giải nén ramdisk để lấy modules
+    cd <đường_dẫn_project>/ZCU104_Linux/images/linux/
+    gunzip rootfs.cpio.gz
+    mkdir -p temp_rootfs
+    cd temp_rootfs
+    cpio -i < ../rootfs.cpio
+    
+    # Chép thư mục modules vào thẻ nhớ
+    sudo cp -r lib/modules/* /media/username/ROOT/lib/modules/
+    ```
 
-  ...
+5.  **Unmount thẻ nhớ**:
+    ```bash
+    sudo umount /dev/sdX1 /dev/sdX2
+    ```
+    Bây giờ bạn có thể rút thẻ nhớ ra an toàn.
 
-  Command (m for help) : [Điền n]
+---
 
-  ...
+## III. Khởi động và Lập trình trên ZCU104
 
-  Select (default p): [Bấm Enter]
+### 1. Thiết lập Phần cứng và Kết nối Serial
 
-  ...
+1.  Cắm thẻ nhớ đã chuẩn bị vào ZCU104.
+2.  Kết nối cáp Micro-USB vào cổng **UART** trên bo mạch và máy tính.
+3.  Kết nối cáp Ethernet.
+4.  Cắm nguồn và bật công tắc.
+    ![Sơ đồ kết nối phần cứng ZCU104](Setup_device.png)
 
-  First sector (...): [Bấm Enter]
+5.  Sử dụng một trình terminal (ví dụ: `screen`, `minicom`, `putty`) để xem log khởi động.
+    ```bash
+    # Tìm cổng ttyUSB, có thể là ttyUSB0, ttyUSB1,...
+    ls /dev/ttyUSB*
+    #Nếu có cả 4 cổng mọi người cẩn phải thử hết
+    
+    # Kết nối với baudrate 115200
+    sudo screen /dev/ttyUSB1 115200
+    ```
 
-  ...
+### 2. Truy cập và Lập trình
 
-  Last sector, +/-sectors or +/-size{K,M,G,T,P} (...): [Bấm Enter]
+1.  Sau khi Linux khởi động, bạn sẽ thấy lời nhắc đăng nhập.
+2.  **Kiểm tra địa chỉ IP** của bo mạch:
+    ```bash
+    froifonig
+    
+    # Nếu lệnh trên lỗi hay thử với lệnh dưới, có thể cần với sudo
+    ifconfig
+    
+    # Hoặc trên các hệ thống mới hơn
+    ip a
+    ```
+    Tìm địa chỉ IP trong output, ví dụ: `inet 192.168.1.10`.
 
-  ...
+3.  **Kết nối qua SSH** từ máy tính của bạn:
+    Sử dụng SSH để làm việc trên bo mạch một cách tiện lợi hơn.
+    ```bash
+    ssh debian@<địa_chỉ_IP_của_ZCU104>
+    ```
 
-  Do you want to remove the signature [Y]es/[N]o: [Điền y]
+4.  **Biên dịch và chạy code C/C++**:
+    Bây giờ bạn có thể chuyển file mã nguồn của mình (ví dụ, qua `scp`) vào thư mục `/home/debian/` trên ZCU104, sau đó biên dịch và chạy trực tiếp trên bo mạch.
 
-  ...
+---
 
-  Command (m for help) : [Điền w]
-  ```
+## Liên hệ và Cảm ơn
 
-#### Format để định dạng sd card
-```bash
-sudo mkfs.vfat -F 32 -n boot /dev/sda1
-sudo mkfs.ext4 -L root /dev/sda2
-```
+Mọi thắc mắc, vui lòng liên hệ:
 
-#### Tiến hành mount thẻ SD card
-1) Tạo folder
-   ```bash
-   sudo mkdir /mnt/boot
-   sudo mkdir /mnt/root
-   ```
-2) Thực hiện mount thẻ SD card
-   ```bash
-   sudo mount /dev/sda1 /mnt/boot
-   sudo mount /dev/sda2 /mnt/root
-   ```
-⚠️ **Lưu ý**: Tuy nhiêu, hệ điều hành sẽ tự động mount đến một vị trí khác vì vậy mọi người cần kiểm tra lại
-	Kiểm tra lại ổ vị trí mount:
-		```bash
-		lsblk
-		```
-	Trên màn log sẽ hiện ví dụ như:
-	```text
-	NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
-	loop0    7:0    0     4K  1 loop /snap/bare/5
-	loop1    7:1    0 329,6M  1 loop /snap/code/209
-	loop2    7:2    0  63,8M  1 loop /snap/core20/2669
-	loop3    7:3    0  73,9M  1 loop /snap/core22/2111
-	loop4    7:4    0  73,9M  1 loop /snap/core22/2133
-	loop5    7:5    0 247,1M  1 loop /snap/firefox/6836
-	loop6    7:6    0 247,6M  1 loop /snap/firefox/6966
-	loop7    7:7    0 516,2M  1 loop /snap/gnome-42-2204/226
-	loop8    7:8    0   516M  1 loop /snap/gnome-42-2204/202
-	loop9    7:9    0  91,7M  1 loop /snap/gtk-common-themes/1535
-	loop10   7:10   0  12,9M  1 loop /snap/snap-store/1113
-	loop11   7:11   0  12,2M  1 loop /snap/snap-store/1216
-	loop12   7:12   0  49,3M  1 loop /snap/snapd/24792
-	loop13   7:13   0  50,8M  1 loop /snap/snapd/25202
-	loop14   7:14   0   568K  1 loop /snap/snapd-desktop-integration/253
-	loop15   7:15   0   576K  1 loop /snap/snapd-desktop-integration/315
-	loop16   7:16   0 330,2M  1 loop /snap/code/210
-	sda      8:0    0 465,8G  0 disk 
-	├─sda1   8:1    0   512M  0 part /boot/efi
-	└─sda2   8:2    0 465,3G  0 part /
-	sdb      8:16   0 931,5G  0 disk 
-	├─sdb1   8:17   0 931,5G  0 part /media/edabk/boot
-	└─sda2   8:2    0 465,3G  0 part /media/edabk/root
-	```
-	Từ đây mọi người sử dụng 2 đường dẫn mới là `/media/edabk/boot` và `/media/edabk/root` thực hiện cho các bước tiếp theo.
+* **Nhóm EDABK**:
+    * Đặng Công Bách
+    * Nguyễn Thành Trung
+* **Tác giả hướng dẫn**: Anh **Phạm Thành Luân**
+    * **Facebook**: [https://www.facebook.com/pham.luan.921/](https://www.facebook.com/pham.luan.921/)
+    * **Email**: [luanph@uit.edu.vn](mailto:luanph@uit.edu.vn)
 
-3) Dịch chuyển file config vào boot
-   ```bash
-   	cd 
-	sudo cp BOOT.BIN boot.scr image.ub /media/edabk/boot/
-   ```
-4) Giải nén deian linux
-   📥 [Tải file Debian rootfs tại đây](https://drive.google.com/file/d/1ZcJYuVHpn8ER11nLCjwCUjfc5ykqP0tM/view?usp=sharing)
-
-	> File rootfs này chứa hệ điều hành Debian đã được cấu hình sẵn cho kiến trúc ARM64, hỗ trợ giao diện XFCE và dễ dàng cài đặt thêm ứng dụng bằng `apt`.
-	> Giải nén file zip để được file tar
-
-	Giải nén file tar đến folder root
-	```bash
- 	sudo tar xfvp arm64-rootfs-debian-bullseye.tar -C /media/edabk/root/
- 	```
- 	⚠️ **Lưu ý**: file tar mọi người nếu cần phải trỏ đường dẫn đến đúng file này
-5) Tạo ramdisk
-   ```
+Một lần nữa, em xin chân thành cảm ơn sự hướng dẫn tận tình của anh Phạm Thành Luân đã hỗ trợ nhóm thực hiện project này.
