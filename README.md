@@ -208,7 +208,8 @@ Sử dụng thẻ nhớ từ **8GB trở lên**.
     * **Giải nén vào thẻ nhớ**:
         ```bash
         # -C chỉ định thư mục đích để giải nén
-        sudo tar -xzf <đường_dẫn_tới_file>/arm64-rootfs-debian-bullseye.gz -C /media/username/ROOT/
+        sudo tar -xzf <đường_dẫn_tới_file>/arm64-rootfs-debian-bullseye.tar -C /media/username/ROOT/
+        # Lưu ý nếu file là file .zip thì cần unzip để lấy được file .tar
         ```
 
 4.  **Chép Kernel Modules**:
