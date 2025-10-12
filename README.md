@@ -165,7 +165,7 @@ Sử dụng thẻ nhớ từ **8GB trở lên**.
     ```
     Trong giao diện `fdisk`, lần lượt nhập các lệnh sau:
     * `d` (xóa phân vùng cũ nếu có, lặp lại cho đến khi hết)
-    * `n` (tạo phân vùng mới) -> `p` (primary) -> `1` (partition 1) -> `Enter` (default first sector) -> `+1G` (kích thước 1GB cho phân vùng boott)
+    * `n` (tạo phân vùng mới) -> `p` (primary) -> `1` (partition 1) -> `Enter` (default first sector) -> `+1GB` (kích thước 1GB cho phân vùng boott)
     * `n` (tạo phân vùng mới) -> `p` (primary) -> `2` (partition 2) -> `Enter` (default first sector) -> `Enter` (default last sector, dùng toàn bộ phần còn lại)
     * `w` (ghi thay đổi và thoát)
 
@@ -212,7 +212,7 @@ Sử dụng thẻ nhớ từ **8GB trở lên**.
     * **Giải nén vào thẻ nhớ**:
         ```bash
         # -C chỉ định thư mục đích để giải nén
-        sudo tar -xfvp <đường_dẫn_tới_file>/arm64-rootfs-debian-bullseye.tar -C /media/username/root/
+        sudo tar xfvp <đường_dẫn_tới_file>/arm64-rootfs-debian-bullseye.tar -C /media/username/root/
         # Lưu ý nếu file là file .zip thì cần unzip để lấy được file .tar
         ```
 
