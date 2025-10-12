@@ -68,6 +68,8 @@ Sau khi hoàn tất Block Design và **Generate Bitstream** thành công trong V
     ```
 
 5.  **Cấu hình Kernel và Device Tree**:
+    * **Điều chỉnh thiết bị**:
+      `[<Tên board của bạn>]MACHINE NAME`
     * **Thiết lập Kernel boott Arguments**:
         Điều hướng đến: `DTG Settings ---> Kernel boottargs`
         * Bỏ chọn `[ ] generate boott args automatically`.
@@ -80,7 +82,7 @@ Sau khi hoàn tất Block Design và **Generate Bitstream** thành công trong V
         * Chọn `(X) EXT4 (SD/eMMC/SATA/USB)`.
     * Lưu cấu hình và thoát.
 
-6.  **Chỉnh sửa Device Tree cho driver UIO**:
+7.  **Chỉnh sửa Device Tree cho driver UIO**:
     Để Linux nhận diện được các IP tự thiết kế trong PL qua driver UIO, hãy chỉnh sửa file `system-user.dtsi`:
     * Đường dẫn: `project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi`
     * Xóa toàn bộ nội dung cũ và thay bằng nội dung sau:
@@ -123,7 +125,7 @@ Sau khi hoàn tất Block Design và **Generate Bitstream** thành công trong V
     };
     ```
 
-7.  **Build Project**:
+8.  **Build Project**:
     ```bash
     petalinux-build
     ```
