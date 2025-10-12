@@ -140,7 +140,7 @@ Sau khi build thành công, chúng ta sẽ tạo các file khởi động và ch
 Lệnh này sẽ tạo ra file `boott.BIN` trong thư mục `images/linux/`.
 
 ```bash
-petalinux-package --boott --force --u-boott
+petalinux-package --boot --force --u-boot
 
 # Cấp quyền cho file images
 chmod 777 images/
