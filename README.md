@@ -28,15 +28,13 @@ Sau khi hoàn tất Block Design và **Generate Bitstream** thành công trong V
 
 2.  **Cài đặt các gói phụ thuộc (Ubuntu/Debian)**:
     ```bash
-    sudo apt-get install tofrodos gawk xvfb git libncurses5-dev tftpd zlib1g-dev zlib1g-dev:i386 \
-    libssl-dev flex bison chrpath socat autoconf libtool texinfo gcc-multilib \
-    libsdl1.2-dev libglib2.0-dev screen pax libtinfo5 xterm build-essential net-tools
+    sudo apt-get install tofrodos gawk xvfb git libncurses5-dev tftpd zlib1g-dev zlib1g-dev:i386 ibssl-dev flex bison chrpath socat autoconf libtool texinfo gcc-multilib libsdl1.2-dev libglib2.0-dev screen pax libtinfo5 xterm build-essential net-tools
     ```
 
 3.  **Chạy trình cài đặt**:
     ```bash
     # Cấp quyền thực thi cho file .run
-    chmod +x petalinux-v2022.2-*.run
+    chmod 755 petalinux-v2022.2-*.run
     
     # Chạy file cài đặt
     ./petalinux-v2022.2-*.run
@@ -66,21 +64,19 @@ Sau khi hoàn tất Block Design và **Generate Bitstream** thành công trong V
 4.  **Import file thiết kế phần cứng (`.xsa`)**:
     ```bash
     # Trỏ PetaLinux đến file .xsa đã xuất từ Vivado
-    petalinux-config --get-hw-description=<đường_dẫn_tới_file_xsa>
+    petalinux-config --get-hw-description <đường_dẫn_tới_file_xsa>
     ```
-    Một giao diện cấu hình sẽ hiện lên. Bạn có thể thoát ngay mà không cần thay đổi gì ở bước này.
 
 5.  **Cấu hình Kernel và Device Tree**:
-    * **Thiết lập Kernel Boot Arguments**:
-        Mở lại giao diện cấu hình: `petalinux-config`
-        Điều hướng đến: `DTG Settings ---> Kernel Bootargs`
-        * Bỏ chọn `[ ] generate boot args automatically`.
-        * Dán chuỗi sau vào `user set kernel bootargs`:
+    * **Thiết lập Kernel boott Arguments**:
+        Điều hướng đến: `DTG Settings ---> Kernel boottargs`
+        * Bỏ chọn `[ ] generate boott args automatically`.
+        * Dán chuỗi sau vào `user set kernel boottargs`:
             ```text
             earlycon clk_ignore_unused cpuidle.off=1 root=/dev/mmcblk0p2 rw rootwait uio_pdrv_genirq.of_id=generic-uio
             ```
-    * **Thiết lập Root Filesystem trên SD Card**:
-        Trong cùng giao diện, điều hướng đến: `Image Packaging Configuration ---> Root filesystem type`
+    * **Thiết lập root Filesystem trên SD Card**:
+        Trong cùng giao diện, điều hướng đến: `Image Packaging Configuration ---> root filesystem type`
         * Chọn `(X) EXT4 (SD/eMMC/SATA/USB)`.
     * Lưu cấu hình và thoát.
 
@@ -141,10 +137,13 @@ Sau khi build thành công, chúng ta sẽ tạo các file khởi động và ch
 
 ### 1. Đóng gói file Khởi động
 
-Lệnh này sẽ tạo ra file `BOOT.BIN` trong thư mục `images/linux/`.
+Lệnh này sẽ tạo ra file `boott.BIN` trong thư mục `images/linux/`.
 
 ```bash
-petalinux-package --boot --force --u-boot
+petalinux-package --boott --force --u-boott
+
+# Cấp quyền cho file images
+chmod 777 images/
 ```
 
 ### 2. Phân vùng và Định dạng Thẻ nhớ
@@ -166,16 +165,16 @@ Sử dụng thẻ nhớ từ **8GB trở lên**.
     ```
     Trong giao diện `fdisk`, lần lượt nhập các lệnh sau:
     * `d` (xóa phân vùng cũ nếu có, lặp lại cho đến khi hết)
-    * `n` (tạo phân vùng mới) -> `p` (primary) -> `1` (partition 1) -> `Enter` (default first sector) -> `+1G` (kích thước 1GB cho phân vùng BOOT)
+    * `n` (tạo phân vùng mới) -> `p` (primary) -> `1` (partition 1) -> `Enter` (default first sector) -> `+1G` (kích thước 1GB cho phân vùng boott)
     * `n` (tạo phân vùng mới) -> `p` (primary) -> `2` (partition 2) -> `Enter` (default first sector) -> `Enter` (default last sector, dùng toàn bộ phần còn lại)
     * `w` (ghi thay đổi và thoát)
 
 3.  **Định dạng các phân vùng**:
-    * Phân vùng 1 (BOOT) định dạng FAT32.
-    * Phân vùng 2 (ROOT) định dạng EXT4.
+    * Phân vùng 1 (boot) định dạng FAT32.
+    * Phân vùng 2 (root) định dạng EXT4.
     ```bash
-    sudo mkfs.vfat -F 32 -n BOOT /dev/sdX1
-    sudo mkfs.ext4 -L ROOT /dev/sdX2
+    sudo mkfs.vfat -F 32 -n boot /dev/sdX1
+    sudo mkfs.ext4 -L root /dev/sdX2
     ```
 
 ### 3. Chép File vào Thẻ nhớ
@@ -188,45 +187,52 @@ Sử dụng thẻ nhớ từ **8GB trở lên**.
     Bạn sẽ thấy output tương tự như sau, hãy tìm đúng đường dẫn mount của bạn:
     ```
     sdb      8:16   1  14.9G  0 disk
-    ├─sdb1   8:17   1     1G  0 part /media/username/BOOT
-    └─sdb2   8:18   1  13.9G  0 part /media/username/ROOT
+    ├─sdb1   8:17   1     1G  0 part /media/username/boot
+    └─sdb2   8:18   1  13.9G  0 part /media/username/root
     ```
-    Trong ví dụ này, điểm mount là `/media/username/BOOT` và `/media/username/ROOT`.
+    Trong ví dụ này, điểm mount là `/media/username/boot` và `/media/username/root`.
+    Thực hiện mount vào các vị trí này:
+    ```bash
+    mount /dev/sdX1 /media/username/boot/
+    mount /dev/sdX2 /media/username/root/
+    ```
 
-2.  **Chép các file khởi động vào phân vùng BOOT**:
+3.  **Chép các file khởi động vào phân vùng boott**:
     Các file cần thiết nằm trong thư mục `images/linux/` của project PetaLinux.
     ```bash
     cd <đường_dẫn_project>/ZCU104_Linux/images/linux/
-    sudo cp BOOT.BIN boot.scr image.ub /media/username/BOOT/
+    sudo cp Image boot.scr system.dtb ramdisk.cpio.gz.u-boot /media/username/boot/
     ```
 
-3.  **Giải nén RootFS vào phân vùng ROOT**:
-    * **Tải Debian RootFS**:
+4.  **Giải nén rootfs vào phân vùng root**:
+    * **Tải Debian rootfs**:
         📥 [arm64-rootfs-debian-bullseye.tar.gz](https://drive.google.com/file/d/1ZcJYuVHpn8ER11nLCjwCUjfc5ykqP0tM/view?usp=sharing)
         > File này chứa hệ điều hành Debian 11 (Bullseye) cho ARM64, có sẵn giao diện XFCE.
 
     * **Giải nén vào thẻ nhớ**:
         ```bash
         # -C chỉ định thư mục đích để giải nén
-        sudo tar -xzf <đường_dẫn_tới_file>/arm64-rootfs-debian-bullseye.tar -C /media/username/ROOT/
+        sudo tar -xfvp <đường_dẫn_tới_file>/arm64-rootfs-debian-bullseye.tar -C /media/username/root/
         # Lưu ý nếu file là file .zip thì cần unzip để lấy được file .tar
         ```
 
-4.  **Chép Kernel Modules**:
+5.  **Chép Kernel Modules**:
     Các module này rất quan trọng để driver (như UIO) hoạt động.
     ```bash
     # Giải nén ramdisk để lấy modules
     cd <đường_dẫn_project>/ZCU104_Linux/images/linux/
-    gunzip rootfs.cpio.gz
-    mkdir -p temp_rootfs
-    cd temp_rootfs
-    cpio -i < ../rootfs.cpio
+    dd bs=64 skip=1 if=rootfs.cpio.gz.u-boot of=ramdisk.cpio.gz
+    gunzip ramdisk.cpio.gz
+    mkdir ramdisk && cd ramdisk
+    chmod 777 -R ../ramdisk
+    chmod 777 -R ../ramdisk.cpio
+    sudo cpio -i -F ../ramdisk.cpio
     
     # Chép thư mục modules vào thẻ nhớ
-    sudo cp -r lib/modules/* /media/username/ROOT/lib/modules/
+    sudo cp -rvf lib/modules/ /media/username/root/lib/modules/
     ```
 
-5.  **Unmount thẻ nhớ**:
+6.  **Unmount thẻ nhớ**:
     ```bash
     sudo umount /dev/sdX1 /dev/sdX2
     ```
