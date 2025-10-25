@@ -2,7 +2,7 @@
 
 Hướng dẫn này trình bày quy trình đầy đủ để thiết lập môi trường PetaLinux, tạo Image khởi động và hệ điều hành Linux (với rootfs Debian) cho bo mạch ZCU104.
 
-> **Lưu ý quan trọng**: Hướng dẫn này được thực hiện với sự hỗ trợ từ anh **Phan Hoài Luân** - AISeQ Lab.
+> **Lưu ý quan trọng**: Hướng dẫn này được thực hiện với sự hỗ trợ từ anh **Phạm Hoài Luân** - AISeQ Lab.
 >
 > **Nguồn tham khảo**: [https://github.com/datnduit/Level_1_KV260_FPGA/tree/main](https://github.com/datnduit/Level_1_KV260_FPGA/tree/main)
 
